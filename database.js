@@ -14,24 +14,33 @@ module.exports = {
 		var con = module.exports.connection;
 
 		// determine if searching freely or for a specific person
-		var searchByName = formattedName != undefined;
+		var searchByName = formattedName != null;
 
-		// get students under this status, with names that match the name query (if searching by name)
-		con.query('SELECT friendlyStatuses.name AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid JOIN users ON studentStatuses.userUID = users.uid WHERE studentStatuses.danceUID = ? AND studentStatuses.status = ? AND (users.firstName IN (?) OR users.lastName IN (?) OR ? IS FALSE) ORDER BY studentStatuses.lastUpdate DESC;', [danceUID, status, formattedName, formattedName, searchByName], function(err, studentResults){
-			if (!err && studentResults !== undefined){
-				callback(studentResults, false);
-			} else {
-				callback(studentResults, true);
-			}
-		});
+		// if searching for "Status Unknown", it's a bit different (no actual entries in studentStatuses table)
+		if (status == 1) {
+			con.query('SELECT * FROM users LEFT JOIN studentStatuses ON users.uid = studentStatuses.userUID WHERE studentStatuses.status = 1;', function(err, studentResults) {
+				if (!err && studentResults !== undefined) {
+
+				}
+			});
+		} else {
+			// get students under this status, with names that match the name query (if searching by name)
+			con.query('SELECT friendlyStatuses.name AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid JOIN users ON studentStatuses.userUID = users.uid WHERE studentStatuses.danceUID = ? AND studentStatuses.status = ? AND (users.firstName IN (?) OR users.lastName IN (?) OR ? IS FALSE) ORDER BY studentStatuses.lastUpdate DESC;', [danceUID, status, formattedName, formattedName, searchByName], function(err, studentResults){
+				if (!err && studentResults !== undefined){
+					callback(studentResults, false);
+				} else {
+					callback(studentResults, true);
+				}
+			});
+		}
 	},
 
 	// get all students who plan to attend a given dance, by uid
-	searchStudentsAttendingDance: function(danceUID, status, formattedName, callback) {
+	searchStudentsAttendingDance: function(danceUID, formattedName, callback) {
 		var con = module.exports.connection;
 
 		// determine if searching freely or for a specific person
-		var searchByName = formattedName != undefined;
+		var searchByName = formattedName != null;
 
 		// get all students currently registered as attending this dance (status > 2)
 		con.query('SELECT friendlyStatuses.name AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid JOIN users ON studentStatuses.userUID = users.uid WHERE studentStatuses.danceUID = ? AND studentStatuses.status > 2 AND (users.firstName IN (?) OR users.lastName IN (?) OR ? IS FALSE) ORDER BY studentStatuses.lastUpdate DESC;', [danceUID, formattedName, formattedName, searchByName], function(err, studentResults) {
@@ -48,20 +57,19 @@ module.exports = {
 		var con = module.exports.connection;
 
 		// determine if searching freely or for a specific person
-		var searchByName = formattedName != undefined;
+		var searchByName = formattedName != null;
 
-		con.query('SELECT IFNULL(friendlyStatuses.name, "Status unknown") AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM users LEFT JOIN studentStatuses ON studentStatuses.userUID = users.uid LEFT JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid WHERE (studentStatuses.danceUID = ? OR studentStatuses.danceUID IS NULL) AND (users.firstName IN (?) OR users.lastName IN (?)) ORDER BY studentStatuses.lastUpdate DESC;', [danceUID, formattedName, formattedName, searchByName], function(err, studentResults) {
+		con.query('SELECT IFNULL(friendlyStatuses.name, "Status unknown") AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM users LEFT JOIN studentStatuses ON studentStatuses.userUID = users.uid LEFT JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid WHERE (studentStatuses.danceUID = ? OR studentStatuses.danceUID IS NULL) AND (users.firstName IN (?) OR users.lastName IN (?) OR ? IS FALSE) ORDER BY studentStatuses.lastUpdate DESC;', [danceUID, formattedName, formattedName, searchByName], function(err, studentResults) {
 			if (!err && studentResults !== undefined) {
-				console.log("Success");
+				callback(studentResults, false);
+			} else {
+				callback([], true);
 			}
-
-			console.log(studentResults);
-			console.log(err);
 		});
 	},
 
 	// get a render obj filled out with given dance info, and search filters
-	getDanceRenderObject: function(danceUID, callback) {
+	getDanceRenderObject: function(danceUID, selectedStatus, callback) {
 		var con = module.exports.connection;
 
 		// prep render object
@@ -79,6 +87,13 @@ module.exports = {
 				con.query('SELECT * FROM friendlyStatuses;', function(err, statuses) {
 					if (!err && statuses !== undefined) {
 						render.filters = statuses;
+
+						for (var i = 0; i < statuses.length; i++) {
+							if (statuses[i].uid == selectedStatus) {
+								statuses[i].isSelected = true;
+								break;
+							}
+						}
 					} else {
 						render.failedToLoadFilters = true;
 					}

@@ -63,10 +63,12 @@ app.get('/', auth.restrictAuth, function(req, res) {
 // get individual dance info by uid
 app.get('/dance/:id', auth.restrictAuth, function(req, res) {
 	// get default dance page render object
-	database.getDanceRenderObject(req.params.id, function(render, err) {
+	database.getDanceRenderObject(req.params.id, null, function(render, err) {
 		if (!err) {
+			render.selectAttending = true;
+
 			// get student info for those planning to attend
-			database.searchStudentsAttendingDance(render.danceUID, function(students, err) {
+			database.searchStudentsAttendingDance(render.danceUID, null, function(students, err) {
 				render.students = students;
 				res.render('dancepage.html', render);
 			});
@@ -80,10 +82,15 @@ app.get('/dance/:id', auth.restrictAuth, function(req, res) {
 app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 	var name;
 
+	// attempt to parse filter
+	var filter = parseInt(req.body.filter, 10);
+	if (isNaN(filter) || filter < -1) {
+		filter = -1;	// default to "All Students"
+	}
+
 	// setup dance page render object
-	database.getDanceRenderObject(req.params.id, function(render, err) {
+	database.getDanceRenderObject(req.params.id, filter, function(render, err) {
 		if (!err) {
-			res.render('dancepage.html', render);
 
 			console.log(req.body);
 			console.log("Under dance ID " + req.params.id);
@@ -92,26 +99,40 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 				name = parseName(req.body.studentName);
 			}
 
-			// attempt to parse filter
-			var filter = parseInt(req.params.id, 10);
-			if (isNaN(filter) || filter < -1) {
-				filter = -1;	// default to "All Students"
-			}
-
 			// if searching for a given status
 			if (filter > 0) {
+				console.log("SEARCHING BY STATUS: " + filter);
 				database.searchStudentsByStatus(req.params.id, filter, name, function(students, err) {
-
+					if (!err) {
+						render.students = students;
+						res.render('dancepage.html', render);
+					} else {
+						res.render('error.html', { message: "Failed to search for students by status." });
+					}
 				});
 			} else if (filter == 0) {
+				console.log("SEARCHING FOR ATTENDING");
+
 				// searching for "Attending"
-				database.searchStudentsAttendingDance(req.params.id, filter, name, function(students, err) {
-					
+				database.searchStudentsAttendingDance(req.params.id, name, function(students, err) {
+					if (!err) {
+						render.students = students;
+						res.render('dancepage.html', render);
+					} else {
+						res.render('error.html', { message: "Failed to search for attending students." });
+					}
 				});
 			} else if (filter == -1) {
+				console.log("SEARCHING ALL STUDENTS");
+
 				// searching for "All Students"
 				database.searchAllStudents(req.params.id, name, function(students, err) {
-					
+					if (!err) {
+						render.students = students;
+						res.render('dancepage.html', render);
+					} else {
+						res.render('error.html', { message: "Failed to search students." });
+					}
 				});
 			}
 		} else {
@@ -120,14 +141,9 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 	});
 });
 
-database.searchAllStudents(1, "'Thomas'", function(students, err) {
-	console.log(students);
-	console.log(err);
-});
-
-// DEBUG AHH
+// parse a name into a format that can be prepared into a statement
 function parseName(name) {
-	return name;
+	return name.split(' ');
 }
 
 // fallback redirect to homepage

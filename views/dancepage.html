@@ -17,9 +17,9 @@
    		{{^failedToLoadFilters}}
    		<select name="filter">
    			<option value="-1">All Students</option>
-   			<option value="0" selected>Attending</option>
+   			<option value="0" {{#selectAttending}}selected{{/selectAttending}}>Attending</option>
    			{{#filters}}
-   			<option value="{{uid}}">{{name}}</option>
+   			<option value="{{uid}}" {{#isSelected}}selected{{/isSelected}}>{{name}}</option>
    			{{/filters}}
 		</select>
 		{{/failedToLoadFilters}}
@@ -38,7 +38,7 @@
 		<tr>
 			<td>{{firstName}} {{lastName}}</td>
 			<td>{{status}}</td>
-			<td >{{lastUpdate}}</td>
+			<td>{{lastUpdate}}</td>
 		</tr>
 		{{/students}}
 
