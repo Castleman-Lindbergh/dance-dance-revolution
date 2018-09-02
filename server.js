@@ -66,7 +66,7 @@ app.get('/dance/:id', auth.restrictAuth, function(req, res) {
 	database.getDanceRenderObject(req.params.id, function(render, err) {
 		if (!err) {
 			// get student info for those planning to attend
-			database.getStudentsAttendingDance(render.danceUID, function(students, err) {
+			database.searchStudentsAttendingDance(render.danceUID, function(students, err) {
 				render.students = students;
 				res.render('dancepage.html', render);
 			});
@@ -118,6 +118,11 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 			res.render('error.html', { message: "Unable to retrieve information for the requested dance." });
 		}
 	});
+});
+
+database.searchAllStudents(1, "'Thomas'", function(students, err) {
+	console.log(students);
+	console.log(err);
 });
 
 // DEBUG AHH
