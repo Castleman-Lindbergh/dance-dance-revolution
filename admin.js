@@ -23,7 +23,15 @@ module.exports = {
 			res.render('createdance.html');
 		});
 
-		app.get('/editDeleteDance', function(req, res){
+		// // get edit an individual dance page
+		// app.get('/editDance', auth.restrictAdmin, function(req, res){
+		// 	database.getAllDances(function(renderDancesObject){
+		// 		res.render('editdance.html', {renderDancesObject:renderDancesObject});
+		// 	});
+		// });
+
+		// get page with menu to select dance to edit / delete
+		app.get('/editDeleteDance', auth.restrictAdmin, function(req, res){
 			database.getAllDances(function(renderDancesObject){
 				console.log(renderDancesObject);
 				var noDances = renderDancesObject.length == 0;
@@ -32,7 +40,8 @@ module.exports = {
 			});
 		});
 
-		app.post('/deleteDance', function(req, res){
+		// request to delete a dance by uid
+		app.post('/deleteDance', auth.isAdmin, function(req, res){
 			var danceUID = req.body.uid;
 			database.deleteDance(danceUID, function(err){
 				if (err){
@@ -43,7 +52,8 @@ module.exports = {
 			});
 		});
 
-		app.get('/editDance/:uid', function(req, res){
+		// get page to edit individual dance
+		app.get('/editDance/:uid', auth.restrictAdmin, function(req, res){
 			var danceUID = req.params.uid;
 			database.getDanceByID(danceUID, function(renderDanceObject){
 				console.log(renderDanceObject);
@@ -51,7 +61,8 @@ module.exports = {
 			});
 		});
 
-		app.post('/editDance', function(req, res){
+		// request to apply edits to a dance
+		app.post('/editDance', auth.isAdmin, function(req, res){
 			var danceUID  = req.body.uid;
 			var danceName = req.body.name;
 			var danceDate = moment(req.body.date);

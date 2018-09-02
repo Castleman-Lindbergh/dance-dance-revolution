@@ -38,7 +38,9 @@ var server = app.listen(8080, function() {
 
 // send homepage with upcoming dances at root page
 app.get('/', auth.restrictAuth, function(req, res) {
-	var render = {};
+	var render = {
+		isAdmin: req.user.isAdmin
+	};
 
 	// get active dance info
 	con.query('SELECT * FROM danceTable WHERE danceTime >= NOW();', function(err, rows) {
@@ -146,12 +148,6 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 	});
 });
 
-app.get('/editDance', function(req, res){
-	database.getAllDances(function(renderDancesObject){
-		res.render('editdance.html', {renderDancesObject:renderDancesObject});
-	});
-	
-});
 // parse a name into a format that can be prepared into a statement
 function parseName(name) {
 	return name.split(' ');

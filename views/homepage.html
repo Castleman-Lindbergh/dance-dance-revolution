@@ -4,6 +4,10 @@
 	<title>Dance Homepage</title>
 </head>
 <body>
+	<a href="/logout">Log Out</a><br>
+	{{#isAdmin}}
+	<a href="/admin">Administrator Portal</a><br>
+	{{/isAdmin}}
 	{{#dances}}
 		<a href="/dance/{{uid}}">{{name}}</a> will be taking place {{venue}} on {{danceTime}} ({{attendanceCount}} are attending!)<br>
 	{{/dances}}
