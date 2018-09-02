@@ -25,7 +25,21 @@ module.exports = {
 
 		app.get('/editDeleteDance', function(req, res){
 			database.getAllDances(function(renderDancesObject){
-				res.render('editdeletedance.html', {renderDancesObject:renderDancesObject});
+				console.log(renderDancesObject);
+				var noDances = renderDancesObject.length == 0;
+				console.log(noDances);
+				res.render('editdeletedance.html', {renderDancesObject:renderDancesObject, noDances: noDances});
+			});
+		});
+
+		app.post('/deleteDance', function(req, res){
+			var danceUID = req.body.uid;
+			database.deleteDance(danceUID, function(err){
+				if (err){
+					console.log(err);
+				} else {
+					res.end();
+				}
 			});
 		});
 
@@ -46,7 +60,7 @@ module.exports = {
 			if (danceUID && danceName && danceDate && danceVenue) {
 				database.editDance(danceUID, danceName, danceDate.format('YYYY-MM-DD hh:mm'), danceVenue, function(err){
 					if (!err){
-						res.redirect('/editdeletedance')
+						res.redirect('/editdeletedance');
 					} else {
 						console.log(err);
 						console.log(danceDate);

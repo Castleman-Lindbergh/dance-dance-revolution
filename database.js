@@ -113,9 +113,6 @@ module.exports = {
 
 		var con = module.exports.connection;
 
-		var renderObject = {
-		};
-
 		con.query('SELECT * FROM danceTable;', function(err, danceResults){
 			if (!err && danceResults !== undefined){
 				callback(danceResults);
@@ -138,8 +135,16 @@ module.exports = {
 		var con = module.exports.connection;
 		console.log(danceDate);
 
-		
+
 		con.query('UPDATE danceTable SET name = ?, danceTime = ?, venue = ? WHERE uid = ?;', [danceName, danceDate, danceVenue, danceUID], function(err){
+			callback(err);
+		});
+	},
+
+	deleteDance: function(danceUID, callback){
+		var con = module.exports.connection;
+
+		con.query('DELETE FROM danceTable WHERE uid = ?;', [danceUID], function(err){
 			callback(err);
 		});
 	}

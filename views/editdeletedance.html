@@ -2,8 +2,12 @@
 <html>
 <head>
 	<title>Edit a dance</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+
 </head>
 <body>
+	{{^noDances}}
 	<table>
 		<tr>
 			<th>Name</th>
@@ -21,10 +25,44 @@
 				<th>{{venue}}</th>
 				<th>{{attendanceCount}}</th>
 				<th><a href="/editDance/{{uid}}">Edit</a></th>
-				<th><a href="/deleteDance/{{uid}}">Delete</a></th>
+				<th><div onclick=deleteDance({{uid}})><i class="fas fa-trash-alt"></i></div></th>
 			</tr>
 		{{/renderDancesObject}}
 
 	</table>
+	{{/noDances}}
+
+	{{#noDances}}
+	There Are No Dances <br>
+	<a href="/createDance">Create One!</a>
+	{{/noDances}}
+
+
 </body>
+
+<script>
+	function deleteDance(uid) {
+		while (true){
+			var confirmationNumber = Math.floor(Math.random() * 1000)+1000;
+			var c = prompt("Please type the number " + confirmationNumber + " to delete", "");
+			console.log(c);
+			if (c){
+				if (c == confirmationNumber) {
+					$.post('/deleteDance', {uid:uid})
+						.done(function(data) {
+							location = location
+						});
+					break
+				} else {
+
+				var retry = confirm("Number mismatch! Retry?");
+
+				} 
+			} if (!retry){
+				break
+			}		
+		}
+	}
+
+</script>
 </html>
