@@ -55,6 +55,14 @@ BEGIN
 	SELECT uid, isAdmin FROM users WHERE uid = LAST_INSERT_ID();
 END;
 //;
+
+-- add new dance, get its id
+CREATE PROCEDURE create_dance (IN danceName VARCHAR(32), IN danceVenue VARCHAR(64), IN dancetime VARCHAR(32))
+BEGIN
+	INSERT INTO danceTable (name, venue, danceTime) VALUES (danceName, danceVenue, dancetime);
+	SELECT LAST_INSERT_ID() AS uid;
+END;
+//;
 DELIMITER ;
 
 -- insert status names
