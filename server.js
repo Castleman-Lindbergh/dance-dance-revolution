@@ -92,16 +92,14 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 	database.getDanceRenderObject(req.params.id, filter, function(render, err) {
 		if (!err) {
 
-			console.log(req.body);
-			console.log("Under dance ID " + req.params.id);
-
+			// parse name query
 			if (req.body.studentName != "") {
 				name = parseName(req.body.studentName);
 			}
 
 			// if searching for a given status
 			if (filter > 0) {
-				console.log("SEARCHING BY STATUS: " + filter);
+				// search for students under only that status
 				database.searchStudentsByStatus(req.params.id, filter, name, function(students, err) {
 					if (!err) {
 						render.students = students;
@@ -111,8 +109,6 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 					}
 				});
 			} else if (filter == 0) {
-				console.log("SEARCHING FOR ATTENDING");
-
 				// searching for "Attending"
 				database.searchStudentsAttendingDance(req.params.id, name, function(students, err) {
 					if (!err) {
@@ -123,8 +119,6 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 					}
 				});
 			} else if (filter == -1) {
-				console.log("SEARCHING ALL STUDENTS");
-
 				// searching for "All Students"
 				database.searchAllStudents(req.params.id, name, function(students, err) {
 					if (!err) {
