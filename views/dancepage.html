@@ -14,7 +14,7 @@
 
 	<form id="searchForm" action="/dance/{{danceUID}}" method="POST">
    		
-   		Student Name: <input type="text" name="studentName" autocomplete="off"> 
+   		Student Name: <input type="text" name="studentName" autocomplete="off" {{#studentName}}value="{{studentName}}"{{/studentName}}> 
    		{{^failedToLoadFilters}}
    		<select id="searchFilter" name="filter">
    			<option value="-1">All Students</option>
@@ -42,6 +42,8 @@
 		</tr>
 		{{/students}}
 	</table>
+
+	{{^dance.isPastDance}}
 
 	{{#yourStatus}}
 		<p>Your current status is: {{yourStatus}}</p>
@@ -85,10 +87,14 @@
 			$('#showStatusUI').click(function() {
 				$('#statusForm').slideToggle();
 			});
+		});
+	</script>
 
-			$('#searchFilter').change(function() {
-				$('#searchForm').submit();
-			});
+	{{/dance.isPastDance}}
+
+	<script>
+		$('#searchFilter').change(function() {
+			$('#searchForm').submit();
 		});
 	</script>
 </body>

@@ -81,7 +81,7 @@ module.exports = {
 		};
 
 		// get dance info
-		con.query('SELECT * FROM danceTable WHERE uid = ?', [render.danceUID], function(err, danceResults) {
+		con.query('SELECT *, danceTime < NOW() AS isPastDance FROM danceTable WHERE uid = ?', [render.danceUID], function(err, danceResults) {
 			if (!err && danceResults !== undefined && danceResults.length > 0){
 				// add dance info to render obj
 				render.dance = danceResults[0];
@@ -120,10 +120,17 @@ module.exports = {
 	createNewStudentStatus: function(danceUID, userUID, status, callback) {
 		var con = module.exports.connection;
 
-		// enter new status or update previous if exists
-		con.query('CALL updateStatus(?, ?, ?);', [danceUID, userUID, status], function(err, rows) {
-			if (!err) {
-				callback(false);
+		// check if past dance
+		con.query('SELECT danceTime < NOW() AS isPastDance FROM danceTable WHERE uid = ?;', [danceUID], function(err, rows) {
+			if (!err && rows !== undefined && rows.length > 0 && !rows[0].isPastDance) {
+				// enter new status or update previous if exists
+				con.query('CALL updateStatus(?, ?, ?);', [danceUID, userUID, status], function(err, rows) {
+					if (!err) {
+						callback(false);
+					} else {
+						callback(true);
+					}
+				});
 			} else {
 				callback(true);
 			}

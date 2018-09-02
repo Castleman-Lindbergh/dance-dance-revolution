@@ -97,6 +97,9 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 				name = parseName(req.body.studentName);
 			}
 
+			// record name search in render object
+			render.studentName = req.body.studentName;
+
 			// if searching for a given status
 			if (filter > 0) {
 				// search for students under only that status
