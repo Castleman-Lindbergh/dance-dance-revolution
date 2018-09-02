@@ -29,6 +29,7 @@ app.use(session({
 
 
 var auth = require('./auth.js').init(app, passport);
+var admin = require('./admin.js').init(app);
 
 // start server
 var server = app.listen(8080, function() {
@@ -60,30 +61,31 @@ app.get('/', auth.restrictAuth, function(req, res) {
 	});
 });
 
-// get administrator portal
-app.get('/admin', auth.restrictAdmin, function(req, res) {
-	res.render('admin.html');
-});
+// get individual dance info by uid
+app.get('/dance/:id', function(req, res) {
+	// prep render object
+	var render = {
+		danceUID: req.params.id
+	};
 
-// get form for creating new dance
-app.get('/createDance', auth.restrictAdmin, function(req, res) {
-	res.render('createdance.html');
-});
+	// get dance info
+	con.query('SELECT * FROM danceTable WHERE uid = ?', [render.danceUID], function(err, danceResults) {
+		if (!err && danceResults !== undefined && danceResults.length > 0){
 
-// allow admin to create a new dance
-app.post('/createDance', auth.isAdmin, function(req, res) {
-	// protect against empty request
-	if (req.body.name && req.body.venue && req.body.date) {
-		// create new dance entry
-		con.query('CALL create_dance(?, ?, ?);', [req.body.name, req.body.venue, req.body.date], function(err, rows) {
-			if (!err && rows !== undefined && rows.length > 0 && rows[0].length > 0) {
-				// redirect to dance page
-				res.redirect('/dance/' + rows[0][0].uid);
-			} else {
-				res.render('error.html', { message: "Unable to create dance." });
-			}
-		});
-	}
+			render.dance = danceResults[0];
+
+			// get all students currently registered as attending this dance (status > 2)
+			con.query('SELECT friendlyStatuses.name AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid JOIN users ON studentStatuses.userUID = users.uid WHERE studentStatuses.danceUID = ? AND studentStatuses.status > 2 ORDER BY studentStatuses.lastUpdate DESC;', [render.danceUID], function(err, studentResults){
+				if (!err && studentResults !== undefined){
+					render.students = studentResults;
+				}
+
+				res.render('dancepage.html', render);
+			});
+		} else {
+			res.render('error.html', { message: "Unable to retrieve dance data." });
+		}
+	});
 });
 
 // // search for students under a given dance event
@@ -120,33 +122,6 @@ app.post('/createDance', auth.isAdmin, function(req, res) {
 // 		}
 // 	});
 // });
-
-// get individual dance info by uid
-app.get('/dance/:id', function(req, res) {
-	// prep render object
-	var render = {
-		danceUID: req.params.id
-	};
-
-	// get dance info
-	con.query('SELECT * FROM danceTable WHERE uid = ?', [render.danceUID], function(err, danceResults) {
-		if (!err && danceResults !== undefined && danceResults.length > 0){
-
-			render.dance = danceResults[0];
-
-			// get all students currently registered as attending this dance (status > 2)
-			con.query('SELECT friendlyStatuses.name AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid JOIN users ON studentStatuses.userUID = users.uid WHERE studentStatuses.danceUID = ? AND studentStatuses.status > 2 ORDER BY studentStatuses.lastUpdate DESC;', [render.danceUID], function(err, studentResults){
-				if (!err && studentResults !== undefined){
-					render.students = studentResults;
-				}
-
-				res.render('dancepage.html', render);
-			});
-		} else {
-			res.render('error.html', { message: "Unable to retrieve dance data." });
-		}
-	});
-});
 
 // fallback redirect to homepage
 app.get('*', function(req, res) {
