@@ -63,7 +63,7 @@ app.get('/', auth.restrictAuth, function(req, res) {
 // get individual dance info by uid
 app.get('/dance/:id', auth.restrictAuth, function(req, res) {
 	// get default dance page render object
-	database.getDanceRenderObject(req.params.id, null, function(render, err) {
+	database.getDanceRenderObject(req.user, req.params.id, null, function(render, err) {
 		if (!err) {
 			render.selectAttending = true;
 
@@ -89,7 +89,7 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 	}
 
 	// setup dance page render object
-	database.getDanceRenderObject(req.params.id, filter, function(render, err) {
+	database.getDanceRenderObject(req.user, req.params.id, filter, function(render, err) {
 		if (!err) {
 
 			// parse name query
@@ -143,4 +143,12 @@ function parseName(name) {
 // fallback redirect to homepage
 app.get('*', function(req, res) {
 	res.redirect('/');
+});
+
+
+
+
+
+app.post('/defineStatus', auth.isAuthenticated, function(req, res) {
+	console.log(req.body);
 });

@@ -72,7 +72,7 @@ module.exports = {
 	},
 
 	// get a render obj filled out with given dance info, and search filters
-	getDanceRenderObject: function(danceUID, selectedStatus, callback) {
+	getDanceRenderObject: function(user, danceUID, selectedStatus, callback) {
 		var con = module.exports.connection;
 
 		// prep render object
@@ -86,22 +86,29 @@ module.exports = {
 				// add dance info to render obj
 				render.dance = danceResults[0];
 
-				// get status names to use as search filters
-				con.query('SELECT * FROM friendlyStatuses;', function(err, statuses) {
-					if (!err && statuses !== undefined) {
-						render.filters = statuses;
-
-						for (var i = 0; i < statuses.length; i++) {
-							if (statuses[i].uid == selectedStatus) {
-								statuses[i].isSelected = true;
-								break;
-							}
-						}
-					} else {
-						render.failedToLoadFilters = true;
+				// get user's current status with this dance
+				con.query('SELECT friendlyStatuses.name FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid WHERE studentStatuses.userUID = ? AND studentStatuses.danceUID = ?;', [user.uid, render.danceUID], function(err, rows) {
+					if (!err && rows !== undefined && rows.length > 0) {
+						render.yourStatus = rows[0].name;
 					}
 
-					callback(render, false);
+					// get status names to use as search filters
+					con.query('SELECT * FROM friendlyStatuses;', function(err, statuses) {
+						if (!err && statuses !== undefined) {
+							render.filters = statuses;
+
+							for (var i = 0; i < statuses.length; i++) {
+								if (statuses[i].uid == selectedStatus) {
+									statuses[i].isSelected = true;
+									break;
+								}
+							}
+						} else {
+							render.failedToLoadFilters = true;
+						}
+
+						callback(render, false);
+					});
 				});
 			} else {
 				callback(render, true);
