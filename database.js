@@ -140,8 +140,6 @@ module.exports = {
 
 	editDance: function(danceUID, danceName, danceDate, danceVenue, callback){
 		var con = module.exports.connection;
-		console.log(danceDate);
-
 
 		con.query('UPDATE danceTable SET name = ?, danceTime = ?, venue = ? WHERE uid = ?;', [danceName, danceDate, danceVenue, danceUID], function(err){
 			callback(err);
@@ -163,13 +161,40 @@ module.exports = {
 		// check if past dance
 		con.query('SELECT danceTime < NOW() AS isPastDance FROM danceTable WHERE uid = ?;', [danceUID], function(err, rows) {
 			if (!err && rows !== undefined && rows.length > 0 && !rows[0].isPastDance) {
-				// enter new status or update previous if exists
-				con.query('CALL updateStatus(?, ?, ?);', [danceUID, userUID, status], function(err, rows) {
-					if (!err) {
-						callback(false);
-					} else {
-						callback(true);
+
+				// change to be applied to attendance count
+				var delta = 0;
+
+				// check if existing relation exists between this student and this dance
+				con.query('SELECT * FROM studentStatuses WHERE userUID = ? AND danceUID = ?;', [userUID, danceUID], function(err, rows) {
+					if (!err && rows !== undefined && rows.length > 0) {
+						// if changing from attending to not-attending
+						if (rows[0].status > 2 && status <= 2) {
+							delta = -1;
+
+						// if changing from not-attending to attending
+						} else if (rows[0].status <= 2 && status > 2) {
+							delta = 1;
+						}
+
+					// or if registering a new attendance
+					} else if (rows.length == 0 && status > 2) {
+						delta = 1;
 					}
+
+					// enter new status or update previous if exists
+					con.query('CALL updateStatus(?, ?, ?);', [danceUID, userUID, status], function(err, rows) {
+						if (!err) {
+							callback(false);
+
+							// apply changes to attendance count
+							if (delta != 0) {
+								con.query('UPDATE danceTable SET attendanceCount = attendanceCount + ? WHERE uid = ?;', [delta, danceUID], function(err, rows) {});
+							}
+						} else {
+							callback(true);
+						}
+					});
 				});
 			} else {
 				callback(true);
