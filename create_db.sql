@@ -1,0 +1,39 @@
+
+DROP DATABASE IF EXISTS dancedance;
+CREATE DATABASE dancedance;
+
+USE dancedance;
+
+-- records all dance event info
+CREATE TABLE danceTable (
+	uid INT NOT NULL AUTO_INCREMENT,
+	name VARCHAR(32),
+	danceTime DATETIME,
+	venue VARCHAR(64),
+	attendanceCount INT,
+	isActive TINYINT(1),
+	PRIMARY KEY (uid)
+);
+
+-- all user info
+CREATE TABLE users (
+	uid INT NOT NULL AUTO_INCREMENT,
+	firstName VARCHAR(32),
+	lastName VARCHAR(32),
+	PRIMARY KEY (uid)
+);
+
+-- links between students and dances, recording status
+CREATE TABLE studentStatuses (
+	uid INT NOT NULL AUTO_INCREMENT,
+	danceUID INT,
+	userUID INT,
+	status TINYINT(5),
+	lastUpdate DATETIME,
+	PRIMARY KEY (uid),
+	FOREIGN KEY (danceUID) REFERENCES danceTable(uid) ON DELETE CASCADE,
+	FOREIGN KEY (userUID) REFERENCES users(uid) ON DELETE CASCADE
+);
+
+-- links between students and dances for dances NOT CURRENTLY ACTIVE
+CREATE TABLE studentStatusesHistory LIKE studentStatuses;
