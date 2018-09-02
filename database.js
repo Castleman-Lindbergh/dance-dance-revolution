@@ -154,6 +154,7 @@ module.exports = {
 		con.query('DELETE FROM danceTable WHERE uid = ?;', [danceUID], function(err){
 			callback(err);
 		});
+	},
 
 	// enter a new student-dance relation into studentStatuses table
 	createNewStudentStatus: function(danceUID, userUID, status, callback) {
