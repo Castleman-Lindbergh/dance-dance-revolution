@@ -17,7 +17,7 @@
    		Student Name: <input type="text" name="studentName" autocomplete="off" {{#studentName}}value="{{studentName}}"{{/studentName}}> 
    		{{^failedToLoadFilters}}
    		<select id="searchFilter" name="filter">
-   			<option value="-1">All Students</option>
+   			<option value="-1"{{#selectAll}}selected{{/selectAll}}>All Students</option>
    			<option value="0" {{#selectAttending}}selected{{/selectAttending}}>Attending</option>
    			{{#filters}}
    			<option value="{{uid}}" {{#isSelected}}selected{{/isSelected}}>{{name}}</option>

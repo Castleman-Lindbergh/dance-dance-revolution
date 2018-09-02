@@ -114,6 +114,8 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 					}
 				});
 			} else if (filter == 0) {
+				render.selectAttending = true;	// register which filter is selected in UI
+
 				// searching for "Attending"
 				database.searchStudentsAttendingDance(req.params.id, name, function(students, err) {
 					if (!err) {
@@ -125,6 +127,8 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 					}
 				});
 			} else if (filter == -1) {
+				render.selectAll = true;	// register which filter is selected in UI
+
 				// searching for "All Students"
 				database.searchAllStudents(req.params.id, name, function(students, err) {
 					if (!err) {
