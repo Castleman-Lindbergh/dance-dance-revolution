@@ -48,22 +48,22 @@
 		<button id="showStatusUI"><strong>I want to change this</strong></button>
 	{{/yourStatus}}
 
-	<form method="POST" action="/defineStatus" id="statusForm" {{#yourStatus}}hidden{{/yourStatus}}>
+	<form method="POST" action="/defineStatus/{{danceUID}}" id="statusForm" {{#yourStatus}}hidden{{/yourStatus}}>
 		<div id="firstTier">
 			<p>Will you attend?</p>
 			<button id="showSecond" type="button">Yes</button>
-			<button name="status" value="1">No</button>
+			<button name="status" value="2">No</button>
 
 			<div id="secondTier" hidden>
 				<p>Do you have a date?</p>
-				<button name="status" value="2">Yes</button>
+				<button name="status" value="3">Yes</button>
 				<button id="showThird" type="button">No</button>
 
 				<div id="thirdTier" hidden>
 					<p>Do you want a date?</p>
-					<button name="status" value="3">Yes</button>
-					<button name="status" value="4">No</button>
-					<button name="status" value="5">Not opposed to it</button>
+					<button name="status" value="4">Yes</button>
+					<button name="status" value="5">No</button>
+					<button name="status" value="6">Not opposed to it</button>
 				</div>
 			</div>
 		</div>

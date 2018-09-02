@@ -114,5 +114,19 @@ module.exports = {
 				callback(render, true);
 			}
 		});
+	},
+
+	// enter a new student-dance relation into studentStatuses table
+	createNewStudentStatus: function(danceUID, userUID, status, callback) {
+		var con = module.exports.connection;
+
+		// enter new status or update previous if exists
+		con.query('CALL updateStatus(?, ?, ?);', [danceUID, userUID, status], function(err, rows) {
+			if (!err) {
+				callback(false);
+			} else {
+				callback(true);
+			}
+		});
 	}
 }

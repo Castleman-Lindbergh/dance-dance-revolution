@@ -148,7 +148,22 @@ app.get('*', function(req, res) {
 
 
 
+// allow user to update their status relative to a dance
+app.post('/defineStatus/:id', auth.isAuthenticated, function(req, res) {
+	var danceUID = parseInt(req.params.id, 10);
+	var status = parseInt(req.body.status, 10);
 
-app.post('/defineStatus', auth.isAuthenticated, function(req, res) {
-	console.log(req.body);
+	if (!isNaN(danceUID) && !isNaN(status)) {
+		// enter a new status relation into db
+		database.createNewStudentStatus(danceUID, req.user.uid, status, function(err) {
+			if (err) {
+				res.render('error.html', { message: "Unable to update status." });
+			} else {
+				res.redirect('/dance/' + danceUID);
+			}
+		});
+	} else {
+		res.redirect('/');
+	}
+	
 });
