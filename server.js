@@ -63,9 +63,30 @@ app.get('/dance/:id', auth.restrictAuth, function(req, res) {
 	res.render('dancepage.html');
 });
 
-// debug
-app.get('/test', function(req, res) {
-	res.send(req.user);
+// get administrator portal
+app.get('/admin', auth.restrictAdmin, function(req, res) {
+	res.render('admin.html');
+});
+
+// get form for creating new dance
+app.get('/createDance', auth.restrictAdmin, function(req, res) {
+	res.render('createdance.html');
+});
+
+// allow admin to create a new dance
+app.post('/createDance', auth.isAdmin, function(req, res) {
+	// protect against empty request
+	if (req.body.name && req.body.venue && req.body.date) {
+		// create new dance entry
+		con.query('CALL create_dance(?, ?, ?);', [req.body.name, req.body.venue, req.body.date], function(err, rows) {
+			if (!err && rows !== undefined && rows.length > 0 && rows[0].length > 0) {
+				// redirect to dance page
+				res.redirect('/dance/' + rows[0][0].uid);
+			} else {
+				res.render('error.html', { message: "Unable to create dance." });
+			}
+		});
+	}
 });
 
 // fallback redirect to homepage
