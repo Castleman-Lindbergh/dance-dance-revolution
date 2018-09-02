@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Edit a dance</title>
+</head>
+<body>
+	<table>
+		<tr>
+			<th>Name</th>
+			<th>Time</th>
+			<th>Venue</th>
+			<th>Number of students in attendence</th>
+			<th>Edit</th>
+			<th>Delete</th>
+		</tr>
+
+		{{#renderDancesObject}}
+			<tr>
+				<th>{{name}}</th>
+				<th>{{danceTime}}</th>
+				<th>{{venue}}</th>
+				<th>{{attendanceCount}}</th>
+				<th><a href="/editDance/{{uid}}">Edit</a></th>
+				<th><a href="/deleteDance/{{uid}}">Delete</a></th>
+			</tr>
+		{{/renderDancesObject}}
+
+	</table>
+</body>
+</html>
