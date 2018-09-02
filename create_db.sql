@@ -10,8 +10,8 @@ CREATE TABLE danceTable (
 	name VARCHAR(32),
 	danceTime DATETIME,
 	venue VARCHAR(64),
-	attendanceCount INT,
-	isActive TINYINT(1),
+	attendanceCount INT DEFAULT 0,
+	isActive TINYINT(1) DEFAULT 1,
 	PRIMARY KEY (uid)
 );
 
@@ -20,6 +20,8 @@ CREATE TABLE users (
 	uid INT NOT NULL AUTO_INCREMENT,
 	firstName VARCHAR(32),
 	lastName VARCHAR(32),
+	email VARCHAR(64),
+	isAdmin TINYINT(1) DEFAULT 0,
 	PRIMARY KEY (uid)
 );
 
@@ -37,3 +39,14 @@ CREATE TABLE studentStatuses (
 
 -- links between students and dances for dances NOT CURRENTLY ACTIVE
 CREATE TABLE studentStatusesHistory LIKE studentStatuses;
+
+-- add new user and return their information
+DELIMITER //;
+CREATE PROCEDURE create_user (IN userEmail VARCHAR(64), IN userFirst VARCHAR(32), IN userLast VARCHAR(32))
+BEGIN
+	INSERT INTO users (email, firstName, lastName) VALUES (userEmail, userFirst, userLast);
+	SELECT uid, isAdmin FROM users WHERE uid = LAST_INSERT_ID();
+END;
+//;
+
+DELIMITER ;

@@ -24,7 +24,13 @@ app.use(session({
 	saveUninitialized: true
 }));
 
+var auth = require('./auth.js').init(app, passport);
+
 // start server
 var server = app.listen(8080, function() {
 	console.log('Dance Dance Revolution server listening on port %d', server.address().port);
+});
+
+app.get('/test', function(req, res) {
+	res.send(req.user);
 });
