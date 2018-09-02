@@ -8,8 +8,8 @@ var session 			= require('cookie-session');
 var passport 			= require('passport');
 var moment				= require('moment');
 var creds				= require('./credentials.js');
-var  database			= require('./database.js');
-var  con 				= database.connection;
+var database			= require('./database.js');
+var con 				= database.connection;
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -27,7 +27,7 @@ app.use(session({
 	saveUninitialized: true
 }));
 
-
+// import local modules
 var auth = require('./auth.js').init(app, passport);
 var admin = require('./admin.js').init(app);
 
@@ -36,7 +36,7 @@ var server = app.listen(8080, function() {
 	console.log('Dance Dance Revolution server listening on port %d', server.address().port);
 });
 
-// render homepage
+// send homepage with upcoming dances at root page
 app.get('/', auth.restrictAuth, function(req, res) {
 	var render = {};
 
@@ -46,10 +46,9 @@ app.get('/', auth.restrictAuth, function(req, res) {
 			// add dance info to render object
 			render.dances = rows;
 
+			// convert each active dance's date into a more readable format
 			for (var i = 0; i < render.dances.length; i++) {
 				var d = render.dances[i];
-
-				// format date
 				d.danceTime = moment(d.danceTime).format('dddd, MMMM Do YYYY');
 			}
 			
@@ -62,66 +61,69 @@ app.get('/', auth.restrictAuth, function(req, res) {
 });
 
 // get individual dance info by uid
-app.get('/dance/:id', function(req, res) {
-	// prep render object
-	var render = {
-		danceUID: req.params.id
-	};
-
-	// get dance info
-	con.query('SELECT * FROM danceTable WHERE uid = ?', [render.danceUID], function(err, danceResults) {
-		if (!err && danceResults !== undefined && danceResults.length > 0){
-
-			render.dance = danceResults[0];
-
-			// get all students currently registered as attending this dance (status > 2)
-			con.query('SELECT friendlyStatuses.name AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid JOIN users ON studentStatuses.userUID = users.uid WHERE studentStatuses.danceUID = ? AND studentStatuses.status > 2 ORDER BY studentStatuses.lastUpdate DESC;', [render.danceUID], function(err, studentResults){
-				if (!err && studentResults !== undefined){
-					render.students = studentResults;
-				}
-
+app.get('/dance/:id', auth.restrictAuth, function(req, res) {
+	// get default dance page render object
+	database.getDanceRenderObject(req.params.id, function(render, err) {
+		if (!err) {
+			// get student info for those planning to attend
+			database.getStudentsAttendingDance(render.danceUID, function(students, err) {
+				render.students = students;
 				res.render('dancepage.html', render);
 			});
 		} else {
-			res.render('error.html', { message: "Unable to retrieve dance data." });
+			res.render('error.html', { message: "Unable to retrieve information for the requested dance." });
 		}
 	});
 });
 
-// // search for students under a given dance event
-// app.post('/dance/:id', function(req,res){
-// 	var danceUID = req.params.id;
-// 	var render = {};
+// field a search under a given dance
+app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
+	var name;
 
-// 	// get dance page info
-// 	con.query('SELECT * FROM danceTable WHERE uid = ?;', [danceUID], function(err, danceResults) {
-// 		if (!err && danceResults !== undefined && danceResults.length > 0) {
-// 			render.dance = danceResults[0];
-// 		}
+	// setup dance page render object
+	database.getDanceRenderObject(req.params.id, function(render, err) {
+		if (!err) {
+			res.render('dancepage.html', render);
 
-// 		// determine filter
-// 		var filter = "1 = 1";
-// 		if (req.body.filter == "0") {
-// 			filter = "studentStatuses.status > 2";
-// 		} else if (req.body.filter == "1") {
-// 			filter = "studentStatuses.status = 2";
-// 		} else if (req.body.filter == "2") {
-// 			filter = "studentStatuses.status = 4";
-// 		}
+			console.log(req.body);
+			console.log("Under dance ID " + req.params.id);
 
-// 		if (req.body.studentName == "") {
-// 			con.query('SELECT friendlyStatuses.name AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid JOIN users ON studentStatuses.userUID = users.uid WHERE studentStatuses.danceUID = ? AND ' + filter + ' ORDER BY studentStatuses.lastUpdate DESC;', [danceUID], function(err, rows) {
-// 				if (!err && rows !== undefined && rows.length > 0) {
-// 					render.students = rows;
-// 				}
+			if (req.body.studentName != "") {
+				name = parseName(req.body.studentName);
+			}
 
-// 				res.render('dancepage.html', render);
-// 			});
-// 		} else {
-// 			res.end();
-// 		}
-// 	});
-// });
+			// attempt to parse filter
+			var filter = parseInt(req.params.id, 10);
+			if (isNaN(filter) || filter < -1) {
+				filter = -1;	// default to "All Students"
+			}
+
+			// if searching for a given status
+			if (filter > 0) {
+				database.searchStudentsByStatus(req.params.id, filter, name, function(students, err) {
+
+				});
+			} else if (filter == 0) {
+				// searching for "Attending"
+				database.searchStudentsAttendingDance(req.params.id, filter, name, function(students, err) {
+					
+				});
+			} else if (filter == -1) {
+				// searching for "All Students"
+				database.searchAllStudents(req.params.id, name, function(students, err) {
+					
+				});
+			}
+		} else {
+			res.render('error.html', { message: "Unable to retrieve information for the requested dance." });
+		}
+	});
+});
+
+// DEBUG AHH
+function parseName(name) {
+	return name;
+}
 
 // fallback redirect to homepage
 app.get('*', function(req, res) {

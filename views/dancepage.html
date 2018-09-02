@@ -14,11 +14,15 @@
 	<form action="/dance/{{danceUID}}" method="POST">
    		
    		Student Name: <input type="text" name="studentName"> 
+   		{{^failedToLoadFilters}}
    		<select name="filter">
-  			<option value="0">Attending</option>
-  			<option value="1">Not Attending</option>
-  			<option value="2">Seeking a Date</option>
+   			<option value="-1">All Students</option>
+   			<option value="0" selected>Attending</option>
+   			{{#filters}}
+   			<option value="{{uid}}">{{name}}</option>
+   			{{/filters}}
 		</select>
+		{{/failedToLoadFilters}}
         <input type="submit" value="Search">
     
 	</form>
