@@ -116,6 +116,45 @@ module.exports = {
 		});
 	},
 
+	getAllDances: function(callback) {
+
+		var con = module.exports.connection;
+
+		con.query('SELECT * FROM danceTable;', function(err, danceResults){
+			if (!err && danceResults !== undefined){
+				callback(danceResults);
+			}
+		});
+	},
+
+	getDanceByID: function(danceUID, callback) {
+
+		var con = module.exports.connection;
+
+		con.query('SELECT * FROM danceTable WHERE UID =  ?;',[danceUID],function(err, danceResults){
+			if (!err && danceResults !== undefined){
+				callback(danceResults);
+			}
+		});
+	},
+
+	editDance: function(danceUID, danceName, danceDate, danceVenue, callback){
+		var con = module.exports.connection;
+		console.log(danceDate);
+
+
+		con.query('UPDATE danceTable SET name = ?, danceTime = ?, venue = ? WHERE uid = ?;', [danceName, danceDate, danceVenue, danceUID], function(err){
+			callback(err);
+		});
+	},
+
+	deleteDance: function(danceUID, callback){
+		var con = module.exports.connection;
+
+		con.query('DELETE FROM danceTable WHERE uid = ?;', [danceUID], function(err){
+			callback(err);
+		});
+
 	// enter a new student-dance relation into studentStatuses table
 	createNewStudentStatus: function(danceUID, userUID, status, callback) {
 		var con = module.exports.connection;
@@ -135,5 +174,6 @@ module.exports = {
 				callback(true);
 			}
 		});
+
 	}
 }

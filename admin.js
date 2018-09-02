@@ -4,7 +4,8 @@
 */
 
 var auth = require('./auth.js');
-var con = require('./database.js').connection;
+var database = require('./database.js');
+var con = database.connection;
 var moment = require('moment');
 
 
@@ -20,6 +21,52 @@ module.exports = {
 		// get form for creating new dance
 		app.get('/createDance', auth.restrictAdmin, function(req, res) {
 			res.render('createdance.html');
+		});
+
+		app.get('/editDeleteDance', function(req, res){
+			database.getAllDances(function(renderDancesObject){
+				console.log(renderDancesObject);
+				var noDances = renderDancesObject.length == 0;
+				console.log(noDances);
+				res.render('editdeletedance.html', {renderDancesObject:renderDancesObject, noDances: noDances});
+			});
+		});
+
+		app.post('/deleteDance', function(req, res){
+			var danceUID = req.body.uid;
+			database.deleteDance(danceUID, function(err){
+				if (err){
+					console.log(err);
+				} else {
+					res.end();
+				}
+			});
+		});
+
+		app.get('/editDance/:uid', function(req, res){
+			var danceUID = req.params.uid;
+			database.getDanceByID(danceUID, function(renderDanceObject){
+				console.log(renderDanceObject);
+				res.render('editdance.html', {danceEdit:renderDanceObject});
+			});
+		});
+
+		app.post('/editDance', function(req, res){
+			var danceUID  = req.body.uid;
+			var danceName = req.body.name;
+			var danceDate = moment(req.body.date);
+			var danceVenue = req.body.venue;
+
+			if (danceUID && danceName && danceDate && danceVenue) {
+				database.editDance(danceUID, danceName, danceDate.format('YYYY-MM-DD hh:mm'), danceVenue, function(err){
+					if (!err){
+						res.redirect('/editdeletedance');
+					} else {
+						console.log(err);
+						console.log(danceDate);
+					}
+				});
+			}
 		});
 
 		// allow admin to create a new dance

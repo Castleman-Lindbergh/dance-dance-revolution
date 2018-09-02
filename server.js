@@ -142,6 +142,12 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 	});
 });
 
+app.get('/editDance', function(req, res){
+	database.getAllDances(function(renderDancesObject){
+		res.render('editdance.html', {renderDancesObject:renderDancesObject});
+	});
+	
+});
 // parse a name into a format that can be prepared into a statement
 function parseName(name) {
 	return name.split(' ');
