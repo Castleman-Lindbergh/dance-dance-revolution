@@ -7,6 +7,9 @@ var cookieParser 		= require('cookie-parser');
 var session 			= require('cookie-session');
 var passport 			= require('passport');
 var creds				= require('./credentials.js');
+var  database			= require('./database.js');
+var  con 				= database.connection;
+
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -37,13 +40,40 @@ app.get('/', auth.restrictAuth, function(req, res) {
 });
 
 // render dance page for a given dance
-app.get('/dance/:id', auth.restrictAuth, function(req, res) {
+// app.get('/dance/:id', auth.restrictAuth, function(req, res) {
 
-});
+// });
 
 // debug
 app.get('/test', function(req, res) {
 	res.send(req.user);
+});
+
+app.post('/studentFilter/:studentUID', function(req,res){
+	var studentUID = req.params.studentUID;
+	res.send("the shit you requested")
+
+})
+
+app.get('/dance/:id', function(req, res){
+	var danceUID =  req.params.id;
+	con.query('SELECT * FROM danceTable where uid = ?', [danceUID], function(err,danceResults){
+		console.log(danceResults);
+		if (!err && danceResults !== undefined){
+			con.query('SELECT studentStatuses.status, studentStatuses.lastUpdate, users.firstname, users.lastname FROM studentStatuses JOIN users ON studentStatuses.uid = users.uid where studentStatuses.danceUID = ?;',[danceUID], function(err, studentResults){
+				if (!err && studentResults !== undefined){
+					res.render('dancepage.html',{
+						uid_dance:danceUID,
+						dance:danceResults[0],
+						students:studentResults
+					});
+				}
+			});
+			
+		}
+	});
+	
+
 });
 
 // fallback redirect to homepage

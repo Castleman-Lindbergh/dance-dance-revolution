@@ -4,6 +4,42 @@
 	<title>Dance Page</title>
 </head>
 <body>
+	{{#dance}}
+		Name: {{name}} <br>
+		Date/time: {{danceTime}} <br>
+		Venue: {{venue}} <br>
+		attendanceCount: {{attendanceCount}} 
+	{{/dance}}
+
+	<form action="/studentFilter/{{uid_dance}}" method="POST">
+   		
+   		Student Name: <input type="text" name="studentName"> 
+   		<select>
+  			<option value="">Attending</option>
+  			<option value="">Not Attending</option>
+  			<option value="">Mercedes</option>
+  			<option value="">Audi</option>
+		</select>
+        <input type="submit" value="Search">
+    
+	</form>
+
+
+	<table>
+		<tr>
+		<th>Name</th>
+		<th>Status</th>
+		<th>Last Update</th>
+		</tr>
+		{{#students}}
+		<tr>
+			<td>{{firstname}} {{lastname}}</td>
+			<td>{{status}}</td>
+			<td >{{lastUpdate}}</td>
+		</tr>
+		{{/students}}
+
+	</table>
 
 </body>
 </html>
