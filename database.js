@@ -19,7 +19,7 @@ module.exports = {
 		// if searching for "Status Unknown", it's a bit different (no actual entries in studentStatuses table)
 		if (status == 1) {
 			// get all users who don't have a relation to this dance in the studentStatuses table
-			con.query('SELECT * FROM users WHERE uid NOT IN (SELECT users.uid FROM users JOIN studentStatuses ON users.uid = studentStatuses.userUID WHERE studentStatuses.danceUID = ?);', [danceUID], function(err, studentResults) {
+			con.query('SELECT *, "Status unknown" AS status FROM users WHERE uid NOT IN (SELECT users.uid FROM users JOIN studentStatuses ON users.uid = studentStatuses.userUID WHERE studentStatuses.danceUID = ?);', [danceUID], function(err, studentResults) {
 				if (!err && studentResults !== undefined) {
 					callback(studentResults, false);
 				} else {

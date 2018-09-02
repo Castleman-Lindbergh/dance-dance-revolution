@@ -70,6 +70,7 @@ app.get('/dance/:id', auth.restrictAuth, function(req, res) {
 			// get student info for those planning to attend
 			database.searchStudentsAttendingDance(render.danceUID, null, function(students, err) {
 				render.students = students;
+				render.hasResults = students.length > 0;
 				res.render('dancepage.html', render);
 			});
 		} else {
@@ -106,6 +107,7 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 				database.searchStudentsByStatus(req.params.id, filter, name, function(students, err) {
 					if (!err) {
 						render.students = students;
+						render.hasResults = students.length > 0;
 						res.render('dancepage.html', render);
 					} else {
 						res.render('error.html', { message: "Failed to search for students by status." });
@@ -116,6 +118,7 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 				database.searchStudentsAttendingDance(req.params.id, name, function(students, err) {
 					if (!err) {
 						render.students = students;
+						render.hasResults = students.length > 0;
 						res.render('dancepage.html', render);
 					} else {
 						res.render('error.html', { message: "Failed to search for attending students." });
@@ -126,6 +129,7 @@ app.post('/dance/:id', auth.isAuthenticated, function(req, res) {
 				database.searchAllStudents(req.params.id, name, function(students, err) {
 					if (!err) {
 						render.students = students;
+						render.hasResults = students.length > 0;
 						res.render('dancepage.html', render);
 					} else {
 						res.render('error.html', { message: "Failed to search students." });

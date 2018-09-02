@@ -28,6 +28,7 @@
     
 	</form>
 
+	{{#hasResults}}
 	<table>
 		<tr>
 			<th>Name</th>
@@ -42,6 +43,10 @@
 		</tr>
 		{{/students}}
 	</table>
+	{{/hasResults}}
+	{{^hasResults}}
+	<p>No student results found!</p>
+	{{/hasResults}}
 
 	{{^dance.isPastDance}}
 
