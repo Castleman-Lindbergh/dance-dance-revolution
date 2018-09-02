@@ -140,14 +140,6 @@ function parseName(name) {
 	return name.split(' ');
 }
 
-// fallback redirect to homepage
-app.get('*', function(req, res) {
-	res.redirect('/');
-});
-
-
-
-
 // allow user to update their status relative to a dance
 app.post('/defineStatus/:id', auth.isAuthenticated, function(req, res) {
 	var danceUID = parseInt(req.params.id, 10);
@@ -165,5 +157,9 @@ app.post('/defineStatus/:id', auth.isAuthenticated, function(req, res) {
 	} else {
 		res.redirect('/');
 	}
-	
+});
+
+// fallback redirect to homepage
+app.get('*', function(req, res) {
+	res.redirect('/');
 });

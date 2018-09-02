@@ -14,7 +14,7 @@
 
 	<form action="/dance/{{danceUID}}" method="POST">
    		
-   		Student Name: <input type="text" name="studentName"> 
+   		Student Name: <input type="text" name="studentName" autocomplete="off"> 
    		{{^failedToLoadFilters}}
    		<select name="filter">
    			<option value="-1">All Students</option>

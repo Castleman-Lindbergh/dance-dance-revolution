@@ -62,7 +62,7 @@ module.exports = {
 		// determine if searching freely or for a specific person
 		var searchByName = formattedName != null;
 
-		con.query('SELECT IFNULL(friendlyStatuses.name, "Status unknown") AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM users LEFT JOIN studentStatuses ON studentStatuses.userUID = users.uid LEFT JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid WHERE (studentStatuses.danceUID = ? OR studentStatuses.danceUID IS NULL) AND (users.firstName IN (?) OR users.lastName IN (?) OR ? IS FALSE) ORDER BY studentStatuses.lastUpdate DESC;', [danceUID, formattedName, formattedName, searchByName], function(err, studentResults) {
+		con.query('SELECT IFNULL(friendlyStatuses.name, "Status unknown") AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM users LEFT JOIN studentStatuses ON (studentStatuses.userUID = users.uid AND studentStatuses.danceUID = ?) LEFT JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid WHERE users.firstName IN (?) OR users.lastName IN (?) OR ? IS FALSE ORDER BY studentStatuses.lastUpdate DESC;', [danceUID, formattedName, formattedName, searchByName], function(err, studentResults) {
 			if (!err && studentResults !== undefined) {
 				callback(studentResults, false);
 			} else {
