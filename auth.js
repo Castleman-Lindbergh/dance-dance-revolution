@@ -22,7 +22,7 @@ module.exports = {
 					user.uid = rows[0].uid;
 					user.isAdmin = rows[0].isAdmin;
 					done(null, user);
-				} else {
+				} else if (/.+?@(students\.)?stab\.org/.test(user.email)) {
 					// assume no existing user, add to system
 					con.query('CALL create_user(?, ?, ?);', [user.email, user.name.givenName, user.name.familyName], function(err, rows) {
 						if (!err && rows !== undefined && rows.length > 0 && rows[0].length > 0) {
@@ -33,7 +33,9 @@ module.exports = {
 						} else {
 							done('There was an error signing you in.', null);
 						}
-					})
+					});
+				} else {
+					done('The email you selected cannot be used with this service. Please use a St. Anne\'s-Belfield associated email.', null);
 				}
 			});
 		});

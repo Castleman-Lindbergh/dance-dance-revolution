@@ -27,21 +27,19 @@
     
 	</form>
 
-
 	<table>
 		<tr>
-		<th>Name</th>
-		<th>Status</th>
-		<th>Last Updated</th>
+			<th>Name</th>
+			<th>Status</th>
+			<th>Last Updated</th>
 		</tr>
 		{{#students}}
 		<tr>
 			<td>{{firstName}} {{lastName}}</td>
 			<td>{{status}}</td>
-			<td>{{lastUpdate}}</td>
+			<td>{{#lastUpdate}}{{lastUpdate}}{{/lastUpdate}}{{^lastUpdate}}No time information{{/lastUpdate}}</td>
 		</tr>
 		{{/students}}
-
 	</table>
 
 </body>
