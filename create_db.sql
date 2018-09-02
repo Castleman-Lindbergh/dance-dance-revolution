@@ -14,6 +14,13 @@ CREATE TABLE danceTable (
 	PRIMARY KEY (uid)
 );
 
+-- friendly status names
+CREATE TABLE friendlyStatuses (
+	uid INT NOT NULL AUTO_INCREMENT,
+	name VARCHAR(32), 
+	PRIMARY KEY (uid)
+);
+
 -- all user info
 CREATE TABLE users (
 	uid INT NOT NULL AUTO_INCREMENT,
@@ -29,9 +36,10 @@ CREATE TABLE studentStatuses (
 	uid INT NOT NULL AUTO_INCREMENT,
 	danceUID INT,
 	userUID INT,
-	status TINYINT(5),
+	status INT,
 	lastUpdate DATETIME,
 	PRIMARY KEY (uid),
+	FOREIGN KEY (status) REFERENCES friendlyStatuses(uid),
 	FOREIGN KEY (danceUID) REFERENCES danceTable(uid) ON DELETE CASCADE,
 	FOREIGN KEY (userUID) REFERENCES users(uid) ON DELETE CASCADE
 );
@@ -48,3 +56,12 @@ BEGIN
 END;
 //;
 DELIMITER ;
+
+-- insert status names
+INSERT INTO friendlyStatuses (name) VALUES
+	/* status 1 */ ("Status unknown"),
+	/* status 2 */ ("Not attending"),
+	/* status 3 */ ("Has a date"),
+	/* status 4 */ ("Seeking a date"),
+	/* status 5 */ ("Not seeking a date"),
+	/* status 6 */ ("Not opposed to having a date");

@@ -4,6 +4,41 @@
 	<title>Dance Page</title>
 </head>
 <body>
+	{{#dance}}
+		Name: {{name}} <br>
+		Date/time: {{danceTime}} <br>
+		Venue: {{venue}} <br>
+		{{attendanceCount}} plan to attend!
+	{{/dance}}
+
+	<form action="/dance/{{danceUID}}" method="POST">
+   		
+   		Student Name: <input type="text" name="studentName"> 
+   		<select name="filter">
+  			<option value="0">Attending</option>
+  			<option value="1">Not Attending</option>
+  			<option value="2">Seeking a Date</option>
+		</select>
+        <input type="submit" value="Search">
+    
+	</form>
+
+
+	<table>
+		<tr>
+		<th>Name</th>
+		<th>Status</th>
+		<th>Last Updated</th>
+		</tr>
+		{{#students}}
+		<tr>
+			<td>{{firstName}} {{lastName}}</td>
+			<td>{{status}}</td>
+			<td >{{lastUpdate}}</td>
+		</tr>
+		{{/students}}
+
+	</table>
 
 </body>
 </html>

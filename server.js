@@ -8,7 +8,8 @@ var session 			= require('cookie-session');
 var passport 			= require('passport');
 var moment				= require('moment');
 var creds				= require('./credentials.js');
-var con					= require('./database.js').connection;
+var  database			= require('./database.js');
+var  con 				= database.connection;
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -25,6 +26,7 @@ app.use(session({
 	resave: true,
 	saveUninitialized: true
 }));
+
 
 var auth = require('./auth.js').init(app, passport);
 
@@ -58,14 +60,70 @@ app.get('/', auth.restrictAuth, function(req, res) {
 	});
 });
 
-// render dance page for a given dance
-app.get('/dance/:id', auth.restrictAuth, function(req, res) {
-	res.render('dancepage.html');
-});
-
 // debug
 app.get('/test', function(req, res) {
 	res.send(req.user);
+});
+
+// // search for students under a given dance event
+// app.post('/dance/:id', function(req,res){
+// 	var danceUID = req.params.id;
+// 	var render = {};
+
+// 	// get dance page info
+// 	con.query('SELECT * FROM danceTable WHERE uid = ?;', [danceUID], function(err, danceResults) {
+// 		if (!err && danceResults !== undefined && danceResults.length > 0) {
+// 			render.dance = danceResults[0];
+// 		}
+
+// 		// determine filter
+// 		var filter = "1 = 1";
+// 		if (req.body.filter == "0") {
+// 			filter = "studentStatuses.status > 2";
+// 		} else if (req.body.filter == "1") {
+// 			filter = "studentStatuses.status = 2";
+// 		} else if (req.body.filter == "2") {
+// 			filter = "studentStatuses.status = 4";
+// 		}
+
+// 		if (req.body.studentName == "") {
+// 			con.query('SELECT friendlyStatuses.name AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid JOIN users ON studentStatuses.userUID = users.uid WHERE studentStatuses.danceUID = ? AND ' + filter + ' ORDER BY studentStatuses.lastUpdate DESC;', [danceUID], function(err, rows) {
+// 				if (!err && rows !== undefined && rows.length > 0) {
+// 					render.students = rows;
+// 				}
+
+// 				res.render('dancepage.html', render);
+// 			});
+// 		} else {
+// 			res.end();
+// 		}
+// 	});
+// });
+
+// get individual dance info by uid
+app.get('/dance/:id', function(req, res){
+	// prep render object
+	var render = {
+		danceUID: req.params.id
+	};
+
+	// get dance info
+	con.query('SELECT * FROM danceTable WHERE uid = ?', [render.danceUID], function(err, danceResults) {
+		if (!err && danceResults !== undefined && danceResults.length > 0){
+
+			render.dance = danceResults[0];
+
+			// get all students currently registered as attending this dance (status > 2)
+			con.query('SELECT friendlyStatuses.name AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid JOIN users ON studentStatuses.userUID = users.uid WHERE studentStatuses.danceUID = ? AND studentStatuses.status > 2 ORDER BY studentStatuses.lastUpdate DESC;', [render.danceUID], function(err, studentResults){
+				if (!err && studentResults !== undefined){
+					render.students = studentResults;
+				}
+
+				res.render('dancepage.html', render);
+			});
+			
+		}
+	});
 });
 
 // fallback redirect to homepage
