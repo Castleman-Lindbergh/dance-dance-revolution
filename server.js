@@ -39,7 +39,8 @@ var server = app.listen(8080, function() {
 // send homepage with upcoming dances at root page
 app.get('/', auth.restrictAuth, function(req, res) {
 	var render = {
-		isAdmin: req.user.isAdmin
+		isAdmin: req.user.isAdmin,
+		myName: req.user.name.givenName
 	};
 
 	// get active dance info
