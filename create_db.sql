@@ -11,7 +11,6 @@ CREATE TABLE danceTable (
 	danceTime DATETIME,
 	venue VARCHAR(64),
 	attendanceCount INT DEFAULT 0,
-	isActive TINYINT(1) DEFAULT 1,
 	PRIMARY KEY (uid)
 );
 

@@ -4,6 +4,8 @@
 	<title>Dance Homepage</title>
 </head>
 <body>
-
+	{{#dances}}
+		<a href="/dance/{{uid}}">{{name}}</a> will be taking place {{venue}} on {{danceTime}} ({{attendanceCount}} are attending!)<br>
+	{{/dances}}
 </body>
 </html>
