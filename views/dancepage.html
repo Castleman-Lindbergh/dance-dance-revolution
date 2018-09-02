@@ -2,6 +2,7 @@
 <html>
 <head>
 	<title>Dance Page</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
 </head>
 <body>
 	{{#dance}}
@@ -11,11 +12,11 @@
 		{{attendanceCount}} plan to attend!
 	{{/dance}}
 
-	<form action="/dance/{{danceUID}}" method="POST">
+	<form id="searchForm" action="/dance/{{danceUID}}" method="POST">
    		
-   		Student Name: <input type="text" name="studentName"> 
+   		Student Name: <input type="text" name="studentName" autocomplete="off" {{#studentName}}value="{{studentName}}"{{/studentName}}> 
    		{{^failedToLoadFilters}}
-   		<select name="filter">
+   		<select id="searchFilter" name="filter">
    			<option value="-1">All Students</option>
    			<option value="0" {{#selectAttending}}selected{{/selectAttending}}>Attending</option>
    			{{#filters}}
@@ -27,6 +28,7 @@
     
 	</form>
 
+	{{#hasResults}}
 	<table>
 		<tr>
 			<th>Name</th>
@@ -41,6 +43,64 @@
 		</tr>
 		{{/students}}
 	</table>
+	{{/hasResults}}
+	{{^hasResults}}
+	<p>No student results found!</p>
+	{{/hasResults}}
 
+	{{^dance.isPastDance}}
+
+	{{#yourStatus}}
+		<p>Your current status is: {{yourStatus}}</p>
+		<button id="showStatusUI"><strong>I want to change this</strong></button>
+	{{/yourStatus}}
+
+	<form method="POST" action="/defineStatus/{{danceUID}}" id="statusForm" {{#yourStatus}}hidden{{/yourStatus}}>
+		<div id="firstTier">
+			<p>Will you attend?</p>
+			<button id="showSecond" type="button">Yes</button>
+			<button name="status" value="2">No</button>
+			<button name="status" value="1">Uncertain</button>
+
+			<div id="secondTier" hidden>
+				<p>Do you have a date?</p>
+				<button name="status" value="3">Yes</button>
+				<button id="showThird" type="button">No</button>
+
+				<div id="thirdTier" hidden>
+					<p>Do you want a date?</p>
+					<button name="status" value="4">Yes</button>
+					<button name="status" value="5">No</button>
+					<button name="status" value="6">Not opposed to it</button>
+				</div>
+			</div>
+		</div>
+	</form>
+
+	<script>
+		$(document).ready(function() {
+			// toggle second tier on answer "yes" to attendance
+			$('#showSecond').click(function() {
+				$('#secondTier').slideToggle();
+			});
+
+			// toggle third tier on answer "no" to currently having a date
+			$('#showThird').click(function() {
+				$('#thirdTier').slideToggle();
+			});
+
+			$('#showStatusUI').click(function() {
+				$('#statusForm').slideToggle();
+			});
+		});
+	</script>
+
+	{{/dance.isPastDance}}
+
+	<script>
+		$('#searchFilter').change(function() {
+			$('#searchForm').submit();
+		});
+	</script>
 </body>
 </html>

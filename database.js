@@ -19,7 +19,7 @@ module.exports = {
 		// if searching for "Status Unknown", it's a bit different (no actual entries in studentStatuses table)
 		if (status == 1) {
 			// get all users who don't have a relation to this dance in the studentStatuses table
-			con.query('SELECT * FROM users WHERE uid NOT IN (SELECT users.uid FROM users JOIN studentStatuses ON users.uid = studentStatuses.userUID WHERE studentStatuses.danceUID = ?);', [danceUID], function(err, studentResults) {
+			con.query('SELECT *, "Status unknown" AS status FROM users WHERE uid NOT IN (SELECT users.uid FROM users JOIN studentStatuses ON users.uid = studentStatuses.userUID WHERE studentStatuses.danceUID = ?);', [danceUID], function(err, studentResults) {
 				if (!err && studentResults !== undefined) {
 					callback(studentResults, false);
 				} else {
@@ -62,7 +62,7 @@ module.exports = {
 		// determine if searching freely or for a specific person
 		var searchByName = formattedName != null;
 
-		con.query('SELECT IFNULL(friendlyStatuses.name, "Status unknown") AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM users LEFT JOIN studentStatuses ON studentStatuses.userUID = users.uid LEFT JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid WHERE (studentStatuses.danceUID = ? OR studentStatuses.danceUID IS NULL) AND (users.firstName IN (?) OR users.lastName IN (?) OR ? IS FALSE) ORDER BY studentStatuses.lastUpdate DESC;', [danceUID, formattedName, formattedName, searchByName], function(err, studentResults) {
+		con.query('SELECT IFNULL(friendlyStatuses.name, "Status unknown") AS status, studentStatuses.lastUpdate, users.firstName, users.lastName FROM users LEFT JOIN studentStatuses ON (studentStatuses.userUID = users.uid AND studentStatuses.danceUID = ?) LEFT JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid WHERE users.firstName IN (?) OR users.lastName IN (?) OR ? IS FALSE ORDER BY studentStatuses.lastUpdate DESC;', [danceUID, formattedName, formattedName, searchByName], function(err, studentResults) {
 			if (!err && studentResults !== undefined) {
 				callback(studentResults, false);
 			} else {
@@ -72,7 +72,7 @@ module.exports = {
 	},
 
 	// get a render obj filled out with given dance info, and search filters
-	getDanceRenderObject: function(danceUID, selectedStatus, callback) {
+	getDanceRenderObject: function(user, danceUID, selectedStatus, callback) {
 		var con = module.exports.connection;
 
 		// prep render object
@@ -81,27 +81,34 @@ module.exports = {
 		};
 
 		// get dance info
-		con.query('SELECT * FROM danceTable WHERE uid = ?', [render.danceUID], function(err, danceResults) {
+		con.query('SELECT *, danceTime < NOW() AS isPastDance FROM danceTable WHERE uid = ?', [render.danceUID], function(err, danceResults) {
 			if (!err && danceResults !== undefined && danceResults.length > 0){
 				// add dance info to render obj
 				render.dance = danceResults[0];
 
-				// get status names to use as search filters
-				con.query('SELECT * FROM friendlyStatuses;', function(err, statuses) {
-					if (!err && statuses !== undefined) {
-						render.filters = statuses;
-
-						for (var i = 0; i < statuses.length; i++) {
-							if (statuses[i].uid == selectedStatus) {
-								statuses[i].isSelected = true;
-								break;
-							}
-						}
-					} else {
-						render.failedToLoadFilters = true;
+				// get user's current status with this dance
+				con.query('SELECT friendlyStatuses.name FROM studentStatuses JOIN friendlyStatuses ON studentStatuses.status = friendlyStatuses.uid WHERE studentStatuses.userUID = ? AND studentStatuses.danceUID = ?;', [user.uid, render.danceUID], function(err, rows) {
+					if (!err && rows !== undefined && rows.length > 0) {
+						render.yourStatus = rows[0].name;
 					}
 
-					callback(render, false);
+					// get status names to use as search filters
+					con.query('SELECT * FROM friendlyStatuses;', function(err, statuses) {
+						if (!err && statuses !== undefined) {
+							render.filters = statuses;
+
+							for (var i = 0; i < statuses.length; i++) {
+								if (statuses[i].uid == selectedStatus) {
+									statuses[i].isSelected = true;
+									break;
+								}
+							}
+						} else {
+							render.failedToLoadFilters = true;
+						}
+
+						callback(render, false);
+					});
 				});
 			} else {
 				callback(render, true);
@@ -147,5 +154,26 @@ module.exports = {
 		con.query('DELETE FROM danceTable WHERE uid = ?;', [danceUID], function(err){
 			callback(err);
 		});
+
+	// enter a new student-dance relation into studentStatuses table
+	createNewStudentStatus: function(danceUID, userUID, status, callback) {
+		var con = module.exports.connection;
+
+		// check if past dance
+		con.query('SELECT danceTime < NOW() AS isPastDance FROM danceTable WHERE uid = ?;', [danceUID], function(err, rows) {
+			if (!err && rows !== undefined && rows.length > 0 && !rows[0].isPastDance) {
+				// enter new status or update previous if exists
+				con.query('CALL updateStatus(?, ?, ?);', [danceUID, userUID, status], function(err, rows) {
+					if (!err) {
+						callback(false);
+					} else {
+						callback(true);
+					}
+				});
+			} else {
+				callback(true);
+			}
+		});
+
 	}
 }

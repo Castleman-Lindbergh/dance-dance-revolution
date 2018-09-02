@@ -63,6 +63,22 @@ BEGIN
 	SELECT LAST_INSERT_ID() AS uid;
 END;
 //;
+
+-- enter a new status or update a previously existing one
+CREATE PROCEDURE updateStatus(IN _danceUID INT, IN _userUID INT, IN _status INT)
+BEGIN
+	IF (_status = 1) THEN
+		DELETE FROM studentStatuses WHERE danceUID = _danceUID AND userUID = _userUID;
+	ELSE 
+		IF EXISTS (SELECT * FROM studentStatuses WHERE danceUID = _danceUID AND userUID = _userUID) THEN
+			UPDATE studentStatuses SET status = _status, lastUpdate = NOW() WHERE danceUID = _danceUID AND userUID = _userUID;
+		ELSE 
+			INSERT INTO studentStatuses (danceUID, userUID, status, lastUpdate) VALUES (_danceUID, _userUID, _status, NOW());
+		END IF;
+	END IF;
+END;
+//;
+
 DELIMITER ;
 
 -- insert status names
