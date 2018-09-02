@@ -31,6 +31,22 @@ var server = app.listen(8080, function() {
 	console.log('Dance Dance Revolution server listening on port %d', server.address().port);
 });
 
+// render homepage
+app.get('/', auth.restrictAuth, function(req, res) {
+	res.render('homepage.html');
+});
+
+// render dance page for a given dance
+app.get('/dance/:id', auth.restrictAuth, function(req, res) {
+
+});
+
+// debug
 app.get('/test', function(req, res) {
 	res.send(req.user);
+});
+
+// fallback redirect to homepage
+app.get('*', function(req, res) {
+	res.redirect('/');
 });

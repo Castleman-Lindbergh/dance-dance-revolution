@@ -48,5 +48,4 @@ BEGIN
 	SELECT uid, isAdmin FROM users WHERE uid = LAST_INSERT_ID();
 END;
 //;
-
 DELIMITER ;
