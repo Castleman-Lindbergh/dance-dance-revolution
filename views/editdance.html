@@ -6,13 +6,15 @@
 <body>
 	{{#danceEdit}}
 
+	<h1>Editing "{{name}}"</h1>
+
 	<form action='/editdance' method='post'>
 		<input hidden name='uid' value={{uid}}>
 		Dance Name: 	<input name="name" type="text" value="{{name}}"><br>
 		Date: 			<input name="date" type="text" value="{{danceTime}}"><br>
 		Venue: 			<input name="venue" type="text" value="{{venue}}"><br>
 
-		<input type="submit" value="Submit">
+		<input type="submit" value="Apply Edits">
 
 	</form>
 
