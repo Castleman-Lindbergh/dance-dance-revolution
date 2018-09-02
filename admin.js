@@ -77,11 +77,12 @@ module.exports = {
 
 				if (date.isValid()) {
 					// create new dance entry
-					con.query('CALL create_dance(?, ?, ?);', [req.body.name, req.body.venue, date], function(err, rows) {
+					con.query('CALL create_dance(?, ?, ?);', [req.body.name, req.body.venue, date.format('YYYY-MM-DD hh:mm')], function(err, rows) {
 						if (!err && rows !== undefined && rows.length > 0 && rows[0].length > 0) {
 							// redirect to dance page
 							res.redirect('/dance/' + rows[0][0].uid);
 						} else {
+							console.log(err);
 							res.render('error.html', { message: "Unable to create dance." });
 						}
 					});
