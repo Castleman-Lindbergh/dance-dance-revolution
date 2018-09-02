@@ -12,11 +12,11 @@
 		{{attendanceCount}} plan to attend!
 	{{/dance}}
 
-	<form action="/dance/{{danceUID}}" method="POST">
+	<form id="searchForm" action="/dance/{{danceUID}}" method="POST">
    		
    		Student Name: <input type="text" name="studentName" autocomplete="off"> 
    		{{^failedToLoadFilters}}
-   		<select name="filter">
+   		<select id="searchFilter" name="filter">
    			<option value="-1">All Students</option>
    			<option value="0" {{#selectAttending}}selected{{/selectAttending}}>Attending</option>
    			{{#filters}}
@@ -84,6 +84,10 @@
 
 			$('#showStatusUI').click(function() {
 				$('#statusForm').slideToggle();
+			});
+
+			$('#searchFilter').change(function() {
+				$('#searchForm').submit();
 			});
 		});
 	</script>
