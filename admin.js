@@ -31,12 +31,17 @@ module.exports = {
 		// });
 
 		// get page with menu to select dance to edit / delete
-		app.get('/editDeleteDance', auth.restrictAdmin, function(req, res){
-			database.getAllDances(function(renderDancesObject){
-				console.log(renderDancesObject);
+		app.get('/editDeleteDance', auth.restrictAdmin, function(req, res) {
+			// get all dance data from dance table
+			database.getAllDances(function(renderDancesObject) {
+				// check if there are any dances to modify
 				var noDances = renderDancesObject.length == 0;
-				console.log(noDances);
-				res.render('editdeletedance.html', {renderDancesObject:renderDancesObject, noDances: noDances});
+
+				// render edit page
+				res.render('editdeletedance.html', {
+					renderDancesObject:renderDancesObject, 
+					noDances: noDances
+				});
 			});
 		});
 

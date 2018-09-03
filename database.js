@@ -116,40 +116,43 @@ module.exports = {
 		});
 	},
 
+	// get all dance info from dance table, including whether or not each dance is active or past
 	getAllDances: function(callback) {
-
 		var con = module.exports.connection;
 
-		con.query('SELECT * FROM danceTable;', function(err, danceResults){
+		// get all dance info
+		con.query('SELECT *, danceTime < NOW() AS isPastDance FROM danceTable;', function(err, danceResults) {
 			if (!err && danceResults !== undefined){
 				callback(danceResults);
 			}
 		});
 	},
 
+	// get individual dance info from dance table, by uid
 	getDanceByID: function(danceUID, callback) {
-
 		var con = module.exports.connection;
 
-		con.query('SELECT * FROM danceTable WHERE UID =  ?;',[danceUID],function(err, danceResults){
+		con.query('SELECT * FROM danceTable WHERE UID =  ?;',[danceUID], function(err, danceResults) {
 			if (!err && danceResults !== undefined){
 				callback(danceResults);
 			}
 		});
 	},
 
+	// apply a set of changes to a given dance entry in the dance table, by uid
 	editDance: function(danceUID, danceName, danceDate, danceVenue, callback){
 		var con = module.exports.connection;
 
-		con.query('UPDATE danceTable SET name = ?, danceTime = ?, venue = ? WHERE uid = ?;', [danceName, danceDate, danceVenue, danceUID], function(err){
+		con.query('UPDATE danceTable SET name = ?, danceTime = ?, venue = ? WHERE uid = ?;', [danceName, danceDate, danceVenue, danceUID], function(err) {
 			callback(err);
 		});
 	},
 
+	// delete a single dance by uid
 	deleteDance: function(danceUID, callback){
 		var con = module.exports.connection;
 
-		con.query('DELETE FROM danceTable WHERE uid = ?;', [danceUID], function(err){
+		con.query('DELETE FROM danceTable WHERE uid = ?;', [danceUID], function(err) {
 			callback(err);
 		});
 	},
@@ -200,6 +203,5 @@ module.exports = {
 				callback(true);
 			}
 		});
-
 	}
 }
