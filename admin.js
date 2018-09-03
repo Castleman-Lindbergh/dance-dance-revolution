@@ -82,6 +82,8 @@ module.exports = {
 						res.redirect('/editdeletedance');
 					}
 				});
+			} else {
+				res.render('error.html', { message: "Please fill out every field." });
 			}
 		});
 
