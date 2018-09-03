@@ -23,13 +23,6 @@ module.exports = {
 			res.render('createdance.html');
 		});
 
-		// // get edit an individual dance page
-		// app.get('/editDance', auth.restrictAdmin, function(req, res){
-		// 	database.getAllDances(function(renderDancesObject){
-		// 		res.render('editdance.html', {renderDancesObject:renderDancesObject});
-		// 	});
-		// });
-
 		// get page with menu to select dance to edit / delete
 		app.get('/editDeleteDance', auth.restrictAdmin, function(req, res) {
 			// get all dance data from dance table
@@ -48,9 +41,12 @@ module.exports = {
 		// request to delete a dance by uid
 		app.post('/deleteDance', auth.isAdmin, function(req, res){
 			var danceUID = req.body.uid;
+
+			// attempt to remove dance from db
 			database.deleteDance(danceUID, function(err){
+				// handle error
 				if (err){
-					console.log(err);
+					res.render('error.html', { message: "Failed to delete dance. Please try again." });
 				} else {
 					res.end();
 				}
@@ -60,9 +56,11 @@ module.exports = {
 		// get page to edit individual dance
 		app.get('/editDance/:uid', auth.restrictAdmin, function(req, res){
 			var danceUID = req.params.uid;
+
+			// get individual dance info
 			database.getDanceByID(danceUID, function(renderDanceObject){
-				console.log(renderDanceObject);
-				res.render('editdance.html', {danceEdit:renderDanceObject});
+				// render edit page for this dance
+				res.render('editdance.html', { danceEdit: renderDanceObject });
 			});
 		});
 
@@ -73,19 +71,21 @@ module.exports = {
 			var danceDate = moment(req.body.date);
 			var danceVenue = req.body.venue;
 
+			// if valid request
 			if (danceUID && danceName && danceDate && danceVenue) {
+				// attempt to apply the edits
 				database.editDance(danceUID, danceName, danceDate.format('YYYY-MM-DD hh:mm'), danceVenue, function(err){
-					if (!err){
-						res.redirect('/editdeletedance');
+					// handle error
+					if (err){
+						res.render('error.html', { message: "Unable to apply edits to this dance. Please try again." });
 					} else {
-						console.log(err);
-						console.log(danceDate);
+						res.redirect('/editdeletedance');
 					}
 				});
 			}
 		});
 
-		// allow admin to create a new dance
+		// add new dance to the system
 		app.post('/createDance', auth.isAdmin, function(req, res) {
 			// protect against empty request
 			if (req.body.name && req.body.venue && req.body.date) {
@@ -98,7 +98,7 @@ module.exports = {
 							// redirect to dance page
 							res.redirect('/dance/' + rows[0][0].uid);
 						} else {
-							console.log(err);
+							// handle error, gracefully I might say
 							res.render('error.html', { message: "Unable to create dance." });
 						}
 					});
