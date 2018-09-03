@@ -23,6 +23,7 @@ module.exports = {
 					user.isAdmin = rows[0].isAdmin;
 					done(null, user);
 				} else if (/.+?@(students\.)?stab\.org/.test(user.email)) {
+
 					// assume no existing user, add to system
 					con.query('CALL create_user(?, ?, ?);', [user.email, user.name.givenName, user.name.familyName], function(err, rows) {
 						if (!err && rows !== undefined && rows.length > 0 && rows[0].length > 0) {

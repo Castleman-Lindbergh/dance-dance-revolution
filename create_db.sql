@@ -31,6 +31,15 @@ CREATE TABLE users (
 	PRIMARY KEY (uid)
 );
 
+-- users who can designate and remove other admins
+CREATE TABLE superAdmins (
+	uid INT NOT NULL AUTO_INCREMENT,
+	firstName VARCHAR(32),
+	lastName VARCHAR(32),
+	email VARCHAR(64),
+	PRIMARY KEY (uid)
+);
+
 -- links between students and dances, recording status
 CREATE TABLE studentStatuses (
 	uid INT NOT NULL AUTO_INCREMENT,
