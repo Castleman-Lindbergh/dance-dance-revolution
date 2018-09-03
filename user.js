@@ -12,29 +12,33 @@ module.exports = {
 	init: function(app) {
 		// send homepage with upcoming dances at root page
 		app.get('/', auth.restrictAuth, function(req, res) {
-			var render = {
-				isAdmin: req.user.isAdmin,
-				myName: req.user.name.givenName
-			};
+			if (req.user.isSuperAdmin) {
+				res.redirect('/superAdminPortal');
+			} else {
+				var render = {
+					isAdmin: req.user.isAdmin,
+					myName: req.user.name.givenName
+				};
 
-			// get active dance info
-			con.query('SELECT * FROM danceTable WHERE danceTime >= NOW();', function(err, rows) {
-				if (!err && rows !== undefined && rows.length > 0) {
-					// add dance info to render object
-					render.dances = rows;
+				// get active dance info
+				con.query('SELECT * FROM danceTable WHERE danceTime >= NOW();', function(err, rows) {
+					if (!err && rows !== undefined && rows.length > 0) {
+						// add dance info to render object
+						render.dances = rows;
 
-					// convert each active dance's date into a more readable format
-					for (var i = 0; i < render.dances.length; i++) {
-						var d = render.dances[i];
-						d.danceTime = moment(d.danceTime).format('dddd, MMMM Do YYYY');
+						// convert each active dance's date into a more readable format
+						for (var i = 0; i < render.dances.length; i++) {
+							var d = render.dances[i];
+							d.danceTime = moment(d.danceTime).format('dddd, MMMM Do YYYY');
+						}
+						
+						// render page
+						res.render('homepage.html', render);
+					} else {
+						res.render('error.html', { message: "Failed to get dance info." });
 					}
-					
-					// render page
-					res.render('homepage.html', render);
-				} else {
-					res.render('error.html', { message: "Failed to get dance info." });
-				}
-			});
+				});
+			}
 		});
 
 		// get individual dance info by uid

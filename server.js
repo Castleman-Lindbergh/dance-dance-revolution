@@ -28,6 +28,11 @@ app.use(session({
 var auth = require('./auth.js').init(app, passport);
 var admin = require('./admin.js').init(app);
 var user = require('./user.js').init(app);
+var superadmin = require('./superadmin.js').init(app);
+
+app.get('/test', function(req, res) {
+	res.send(req.user);
+});
 
 // fallback redirect to homepage
 app.get('*', function(req, res) {

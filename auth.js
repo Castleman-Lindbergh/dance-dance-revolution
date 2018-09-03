@@ -22,17 +22,29 @@ module.exports = {
 					user.uid = rows[0].uid;
 					user.isAdmin = rows[0].isAdmin;
 					done(null, user);
+
+				// if email is valid
 				} else if (/.+?@(students\.)?stab\.org/.test(user.email)) {
 
-					// assume no existing user, add to system
-					con.query('CALL create_user(?, ?, ?);', [user.email, user.name.givenName, user.name.familyName], function(err, rows) {
-						if (!err && rows !== undefined && rows.length > 0 && rows[0].length > 0) {
-							// cache system uid in session
-							user.uid = rows[0][0].uid;
-							user.isAdmin = rows[0][0].isAdmin;
+					// if not regular user, check if super admin before creating new account
+					con.query('SELECT * FROM superAdmins WHERE email = ?;', [user.email], function(err, rows) {
+						if (!err && rows !== undefined && rows.length > 0) {
+							// cache superadmin info
+							user.uid = rows[0].uid;
+							user.isSuperAdmin = true;
 							done(null, user);
 						} else {
-							done('There was an error signing you in.', null);
+							// assume no existing user, add to system
+							con.query('CALL create_user(?, ?, ?);', [user.email, user.name.givenName, user.name.familyName], function(err, rows) {
+								if (!err && rows !== undefined && rows.length > 0 && rows[0].length > 0) {
+									// cache system uid in session
+									user.uid = rows[0][0].uid;
+									user.isAdmin = rows[0][0].isAdmin;
+									done(null, user);
+								} else {
+									done('There was an error signing you in.', null);
+								}
+							});
 						}
 					});
 				} else {
@@ -115,6 +127,21 @@ module.exports = {
 		}
 	},
 
+	// middleware to restrict pages to super admin users
+	restrictSuperAdmin: function(req, res, next) {
+		// if authenticated and has session data
+		if (req.isAuthenticated() && req.user.uid) {
+			// if administrator, allow
+			if (req.user.isSuperAdmin) {
+				return next();
+			} else {
+				res.redirect('/');
+			}
+		} else {
+			res.redirect('/auth/google?returnTo=' + querystring.escape(req.url));
+		}
+	},
+
 	// middleware (for POST reqs) to check if auth'd
 	isAuthenticated: function(req, res, next) {
 		if (req.isAuthenticated() && req.user.uid) {
@@ -127,6 +154,15 @@ module.exports = {
 	// middleware (for POSTs) to check if requester is admin
 	isAdmin: function(req, res, next) {
 		if (req.isAuthenticated() && req.user.uid && req.user.isAdmin == 1) {
+			return next();
+		} else {
+			res.redirect('/');
+		}
+	},
+
+	// middleware (for POSTs) to check if requester is super admin
+	isSuperAdmin: function(req, res, next) {
+		if (req.isAuthenticated() && req.user.uid && req.user.isSuperAdmin == true) {
 			return next();
 		} else {
 			res.redirect('/');

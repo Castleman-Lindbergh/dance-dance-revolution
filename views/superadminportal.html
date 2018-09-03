@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Super-Administrator Portal</title>
+</head>
+<body>
+	<h1>Super-Administrator Portal</h1>
+	<h3>Welcome, {{firstName}}.</h3>
+
+
+	<form action="/authorizeAdmin" method="POST">
+		<h4>Authorize an existing user to be an administrator</h4>
+		<input name="email" type="text" placeholder="Enter email here" autocomplete="off">
+		<button type="submit">Authorize</button>
+	</form>
+
+	<form action="/deauthorizeAdmin" method="POST">
+		<h4>Deauthorize an existing administrator</h4>
+		<input name="email" type="text" placeholder="Enter email here" autocomplete="off">
+		<button type="submit">Deauthorize</button>
+	</form>
+</body>
+</html>
