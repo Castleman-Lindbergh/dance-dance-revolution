@@ -1,3 +1,8 @@
+
+/*
+	database.js: MySQL connection and database functions
+*/
+
 var creds = require('./credentials.js');
 var mysql = require('mysql');
 
